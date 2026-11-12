@@ -5,14 +5,20 @@ const cors = require('cors');
 const app = express();
 
 //middleware
-app.use(cors());
+app.use(
+  cors({
+    origin: process.env.CLIENT_URL || '*',
+    methods: ['GET', 'POST', 'PATCH', 'DELETE'],
+  })
+);
 app.use(express.json());
 
 //connect to mongoDB
+const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/taskmanager';
 mongoose
-.connect("mongodb://localhost:27017/taskmanager",{})
-.then(() => console.log("connected to MongoDB"))
-.catch((err) => console.log("cannot connect to mongodb:", err));
+  .connect(MONGO_URI)
+  .then(() => console.log("connected to MongoDB"))
+  .catch((err) => console.log("cannot connect to mongodb:", err));
 
 //define task schema and model
 const TaskSchema = new mongoose.Schema({

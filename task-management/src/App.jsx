@@ -3,6 +3,8 @@ import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 const App = () => {
   const [tasks, setTasks] = useState([]);
   const [title, setTitle] = useState('');
@@ -14,7 +16,7 @@ const App = () => {
   useEffect(()=>{
     const loadTasks = async () => {
       try{
-        const response = await axios.get('http://localhost:5000/tasks');
+        const response = await axios.get(`${API_BASE_URL}/tasks`);
         setTasks(response.data);
       }catch(err){
         setError("couldnt fetch tasks");
@@ -32,7 +34,7 @@ const App = () => {
       return;
     }
     try{
-      const response = await axios.post('http://localhost:5000/tasks',{title,status:"pending"});
+      const response = await axios.post(`${API_BASE_URL}/tasks`,{title,status:"pending"});
       setTasks((currentTasks) => [...currentTasks, response.data]);
       setTitle('');
       setError(null);
@@ -47,7 +49,7 @@ const App = () => {
   //update task
   const updateTask = async(id, newStatus)=>{
     try{
-      const response = await axios.patch(`http://localhost:5000/tasks/${id}`,{status:newStatus});
+      const response = await axios.patch(`${API_BASE_URL}/tasks/${id}`,{status:newStatus});
       const updatedTask = response.data;
       setTasks((currentTasks) =>
         currentTasks.map(task => task._id === updatedTask._id ? updatedTask : task)
@@ -65,7 +67,7 @@ const App = () => {
   //delete tasks
   const deleteTask = async(id)=>{
     try{
-      await axios.delete(`http://localhost:5000/tasks/${id}`);
+      await axios.delete(`${API_BASE_URL}/tasks/${id}`);
       setTasks((currentTasks) => currentTasks.filter(task => task._id !== id));
       setError(null);
       setSuccess("task deleted successfully");
