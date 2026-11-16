@@ -20,10 +20,18 @@ const MONGO_URI =
   process.env.MONGO_URL ||
   'mongodb+srv://swetasakthivel5_db_user:WxcHtBksA0UfbyXe@cluster0.x8bnj3o.mongodb.net/taskmanager?retryWrites=true&w=majority';
 
+let dbError = null;
+
 mongoose
   .connect(MONGO_URI)
-  .then(() => console.log('connected to MongoDB'))
-  .catch((err) => console.error('cannot connect to mongodb:', err.message));
+  .then(() => {
+    dbError = null;
+    console.log('connected to MongoDB');
+  })
+  .catch((err) => {
+    dbError = err.message;
+    console.error('cannot connect to mongodb:', err.message);
+  });
 
 //define task schema and model
 const TaskSchema = new mongoose.Schema(
@@ -50,6 +58,8 @@ app.get('/', (req, res) => {
   res.json({
     status: 'server is running',
     database: states[mongoose.connection.readyState] || 'unknown',
+    dbError: dbError,
+    uriUsed: MONGO_URI ? MONGO_URI.replace(/:([^@]+)@/, ':****@') : 'none',
   });
 });
 
@@ -60,7 +70,12 @@ app.get('/tasks', async (req, res) => {
     res.json(tasks);
   } catch (err) {
     console.error('Error fetching tasks:', err);
-    res.status(500).json({ message: 'couldnt fetch tasks', error: err.message });
+    res.status(500).json({
+      message: 'couldnt fetch tasks',
+      error: err.message,
+      dbStatus: ['disconnected', 'connected', 'connecting', 'disconnecting'][mongoose.connection.readyState] || 'unknown',
+      dbError: dbError,
+    });
   }
 });
 
